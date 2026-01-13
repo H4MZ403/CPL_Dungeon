@@ -18,8 +18,10 @@ statement
     | pickupStmt
     | useStmt
     | pushStmt
+    | shootFireballStmt
     | pullStmt
     | repeatStmt
+    | ifStmt
     ;
 
 moveStmt
@@ -31,11 +33,15 @@ rotateStmt
     ;
 
 pickupStmt
-    : ABHOLEN '(' ')'
+    : AUFHEBEN '(' ')'
     ;
 
 useStmt
     : BENUTZEN '(' direction ')'
+    ;
+
+shootFireballStmt
+    : FEUERBALL '(' ')'
     ;
 
 pushStmt
@@ -50,6 +56,39 @@ repeatStmt
     : REPEAT INT ':' NEWLINE+ (statement NEWLINE*)* END
     ;
 
+ifStmt
+  : IF condition ':' NEWLINE+ block
+    (ELSE IF condition ':' NEWLINE+ block)*
+    (ELSE ':' NEWLINE+ block)?
+    END
+  ;
+
+condition
+  : orExpr
+  ;
+
+orExpr
+  : andExpr (OR andExpr)*
+  ;
+
+andExpr
+  : notExpr (AND notExpr)*
+  ;
+
+notExpr
+  : NOT notExpr
+  | predicate
+  | '(' condition ')'
+  ;
+
+predicate
+  : ACTIVE '(' direction ')'
+  ;
+
+block
+  : (statement NEWLINE*)+
+  ;
+
 direction
     : VORNE
     | HINTER
@@ -62,8 +101,9 @@ direction
 
 GEHEN   : 'gehen';
 DREHEN  : 'drehen';
-ABHOLEN : 'abholen';
+AUFHEBEN : 'aufheben';
 BENUTZEN : 'benutzen';
+FEUERBALL : 'feuerball';
 SCHIEBEN : 'schieben';
 ZIEHEN : 'ziehen';
 LINKS   : 'links';
@@ -73,12 +113,24 @@ HINTER  : 'hinter';
 HIER    : 'hier';
 END     : 'end';
 
-fragment DIGIT : [0-9] ;
+ACTIVE: 'activ';
+
+AND: 'and';
+OR: 'or';
+NOT: 'not';
+
 INT     : DIGIT+;
 NUMBER  : DIGIT+ ([.,] DIGIT+)? ;
 
 REPEAT  : 'repeat';
+IF: 'if';
+ELSE: 'else';
 
 NEWLINE : ('\r'? '\n')+ ;
 WS      : [ \t\r]+ -> skip ;
 COMMENT : '#' ~[\r\n]* -> skip;
+
+ID      : (CHAR | '_')(CHAR | DIGIT | '_')*;
+
+fragment CHAR   : [a-zA-Z];
+fragment DIGIT : [0-9] ;
